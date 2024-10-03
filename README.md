@@ -1,1 +1,11 @@
 # multi-lang-sentiment-analysis
+
+
+
+## Datasets:
+
+* https://huggingface.co/datasets/tyqiangz/multilingual-sentiments
+
+* https://www.kaggle.com/datasets/weywenn/sentiment-analysis-multilanguage/data
+
+* https://paperswithcode.com/paper/xed-a-multilingual-dataset-for-sentiment
