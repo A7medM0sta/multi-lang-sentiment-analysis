@@ -1,18 +1,18 @@
-Multi-Language Sentiment Analysis using BERT
+## Multi-Language Sentiment Analysis using BERT
 Overview
 This project implements sentiment analysis for multiple languages using BERT (Bidirectional Encoder Representations from Transformers). Sentiment analysis identifies the emotional tone behind a text (positive, negative, or neutral). BERT is used due to its superior contextual understanding, making it an ideal choice for NLP tasks.
 
-Why BERT?
+* Why BERT?
 BERT revolutionized NLP by enabling bidirectional understanding of text, considering both the words that come before and after each word in a sentence. This feature makes it particularly useful for sentiment analysis, where context plays a vital role in understanding meaning.
 
-Project Structure
+* Project Structure
 The project follows four key steps:
 
 Data Loading and Preprocessing
 Model Preparation using BERT
 Model Training
 Model Testing and Evaluation
-1. Data Loading and Preprocessing
+* 1. Data Loading and Preprocessing
 We load a CSV dataset where each row contains a sentence and its corresponding sentiment label (positive, negative, or neutral). Before passing this data into BERT, we must tokenize it.
 
 Example Data Structure:
