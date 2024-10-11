@@ -40,7 +40,7 @@ df_HARD = pd.read_csv("/content/balanced-reviews.txt", sep="\t", header=0, encod
 df_HARD = df_HARD[["review", "rating"]]  # Focus on review and rating only
 df_HARD.columns = [DATA_COLUMN, LABEL_COLUMN]
 ```
--The ratings are converted into labels, where ratings greater than 3 are coded as 'POS' (positive), and ratings less than 3 are coded as 'NEG' (negative). The dataset is then split into training and testing sets.
+The ratings are converted into labels, where ratings greater than 3 are coded as 'POS' (positive), and ratings less than 3 are coded as 'NEG' (negative). The dataset is then split into training and testing sets.
 ```python
 hard_map = {
     5: 'POS',
@@ -49,11 +49,12 @@ hard_map = {
     1: 'NEG'
 }
 ```
--This results in a balanced dataset with the following label distribution:
+This results in a balanced dataset with the following label distribution:
 
--NEG: 52,164 reviews
--POS: 53,899 reviews
--This dataset is structured and stored using the CustomDataset class.
+NEG: 52,164 reviews
+POS: 53,899 reviews
+
+This dataset is structured and stored using the CustomDataset class.
 
 ## LABR Dataset Processing
 
@@ -77,6 +78,16 @@ The ArSAS dataset contains Arabic tweets labeled with sentiment. The data is rea
   - Mixed: 1,219
 
 The dataset is split into training (15,917) and testing (3,980) sets.
+
+## English Dataset Processing
+
+The English dataset is read from a CSV file containing tweets, with columns for label and tweet text. The dataset is shuffled and labeled as follows: 
+
+- **Label Mapping**: 
+  - 0 → 0
+  - 4 → 1
+
+The dataset is divided into training, validation, and testing sets with 70%, 15%, and 15% of the data, respectively. The final structure includes the columns "text", "label", and a language indicator set to "english".
 
 Data preprocessing is one of the most crucial steps in any NLP task. In this project, we start by loading a CSV file that contains text data and corresponding sentiment labels (positive, negative, or neutral). Each row of the CSV file includes a sentence and a sentiment classification.
 
@@ -126,14 +137,45 @@ model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_l
 
 Once the data is preprocessed and the model is set up, we begin the training process. Fine-tuning BERT involves modifying its internal weights to adjust for the specific sentiment analysis task. During training, we adjust these weights based on the provided data.
 
-### Training Setup
+## Training Procedure
 
-- **Optimizer**: We use the AdamW optimizer, which adjusts learning rates during training to enhance convergence.
+1. **Libraries**: The training process utilizes libraries such as `torch`, `transformers`, and `arabert`. Metrics like accuracy, F1 score, precision, and recall are computed using `sklearn`.
+
+2. **Datasets**: The available datasets include `HARD`, `ASTD-Unbalanced`, and `ArSAS`. The `ArSAS` dataset is selected for training.
+
+3. **Model Selection**: The model `aubmindlab/bert-base-arabertv02-twitter` is chosen from Hugging Face for Arabic text classification.
+
+4. **Preprocessing**: The `ArabertPreprocessor` is used to preprocess the text data for both training and testing datasets.
+
+5. **Tokenization**: Token lengths are analyzed to determine the maximum sentence length, with a limit set to 100 tokens to avoid truncation.
+
+6. **Visualization**: Histograms of sentence lengths for training and testing datasets are plotted to visualize token distribution.
+
+7. **Optimizer**: We use the AdamW optimizer, which adjusts learning rates during training to enhance convergence.
   
-- **Loss Function**: The Cross-Entropy Loss function calculates the difference between predicted outputs and true labels, guiding the model during training.
+8. **Loss Function**: The Cross-Entropy Loss function calculates the difference between predicted outputs and true labels, guiding the model during training.
 
-- **Epochs**: Typically, 3 to 5 epochs are sufficient for training BERT, meaning the model passes over the entire dataset 3 to 5 times.
+9. **Epochs**: Typically, 3 to 5 epochs are sufficient for training BERT, meaning the model passes over the entire dataset 3 to 5 times.
 
+### Regular Training
+
+## Training Parameters
+
+The `TrainingArguments` class configures the training process. Key parameters include:
+- **output_dir**: Directory for saving model checkpoints.
+- **adam_epsilon**: Epsilon value for the Adam optimizer.
+- **learning_rate**: Set to 2e-5 for fine-tuning.
+- **fp16**: Enable mixed precision training for GPUs with tensor cores.
+- **per_device_train_batch_size**: Batch size during training.
+- **per_device_eval_batch_size**: Batch size during evaluation.
+- **gradient_accumulation_steps**: Accumulate gradients over several batches.
+- **num_train_epochs**: Total number of training epochs.
+- **evaluation_strategy**: Set to 'epoch' for evaluations at the end of each epoch.
+- **load_best_model_at_end**: Load the best model based on specified metrics.
+
+### Model Training
+
+The training is initiated using the `trainer.train()` method, and the results for each epoch, including training loss, validation loss, macro F1 score, accuracy, macro precision, and macro recall, are logged.
 ### Training Loop Example
 
 ```python
@@ -151,14 +193,63 @@ for epoch in range(epochs):
         optimizer.zero_grad()
 ```
 
+### Model Saving
+
+After training, the model, tokenizer, and configuration are saved to a specified directory. The label mappings are also stored to facilitate future inference tasks.
+## Predicting Sentiment with the Saved Model
+
+To perform sentiment analysis using the trained model, you can utilize the `pipeline` function from the Transformers library. Below is a sample code snippet for making predictions:
+
+### Code Snippet
+
+```python
+from transformers import pipeline
+
+# Initialize the sentiment analysis pipeline
+pipe = pipeline("sentiment-analysis", model="output_dir", device=0)
+
+# Make a prediction
+result = pipe("الفلم يبدو مقلق نوعا ما")
+print(result)
+
+### Copying the Model
+
+Finally, the model is copied to Google Drive for easy access.
+
+For more details on `TrainingArguments`, refer to the [Hugging Face documentation](https://huggingface.co/transformers/main_classes/trainer.html#trainingarguments).
+
+```
+## Output Explanation
+The output will provide the predicted sentiment along with associated scores for each category (e.g., Positive, Negative, Neutral, Mixed). For example:
+```
+[[{'label': 'Positive', 'score': 0.0022},  {'label': 'Negative', 'score': 0.9817},  {'label': 'Neutral', 'score': 0.0063},  {'label': 'Mixed', 'score': 0.0097}]]
+```
+In this case, the model predicts a Negative sentiment with a high confidence score of approximately 98.17%.
+
+
 ## 4. Testing and Evaluating the Model
 
 After training, the model's performance is tested on a separate dataset that it hasn’t seen before. This ensures that the model generalizes well and can accurately predict the sentiment of new, unseen texts.
 
+## Dataset Creation and Model Initialization
+
+### Dataset Preparation
+
+The `ClassificationDataset` class manages the text and label data for classification tasks. It accepts lists of training text and target labels, along with parameters for the model name, maximum sequence length, and a label mapping. The tokenizer (from the Hugging Face library) processes the input sentences, ensuring they fit within the defined maximum length of 256 tokens. Padding and truncation are applied as necessary to maintain uniform input sizes.
+
+### Model Initialization
+
+The `model_init` function is responsible for loading a pre-trained model for sequence classification. It uses `AutoModelForSequenceClassification` from Hugging Face and configures it to handle the number of labels defined in the label mapping.
+
 ### Evaluation Metrics
 
-- **Accuracy**: Measures the percentage of correctly predicted labels.
-- **F1-Score**: A weighted measure of precision and recall that evaluates how well the model handles imbalanced classes.
+To evaluate model performance, the `compute_metrics` function calculates several key metrics: 
+- **Accuracy**: Overall correctness of predictions.
+- **Macro F1 Score**: Balances precision and recall across all classes.
+- **Macro Precision**: Measures the correctness of positive predictions.
+- **Macro Recall**: Assesses the ability to find all positive instances.
+
+These metrics help in understanding how well the model is performing across different categories.
 
 ### Example Evaluation Code
 
@@ -173,11 +264,86 @@ f1 = f1_score(test_labels, predictions, average='weighted')
 print(f"Accuracy: {accuracy}")
 print(f"F1-Score: {f1}")
 ```
-### Results
+## K-Fold Cross-Validation
 
-- **Accuracy**: 85%
-- **F1-Score**: 84%
-- These results indicate that the fine-tuned BERT model performs well in predicting sentiments across multiple languages, but improvements can still be made.
+This section demonstrates how to perform K-fold cross-validation to evaluate the model's performance and optimize hyperparameters. 
+
+### Steps
+
+1. **Divide the Dataset**: Split the training set into K-folds for training and validation.
+2. **Define Stratified K-Folds**: Utilize the `StratifiedKFold` class from `sklearn.model_selection`.
+
+### Code Snippet
+
+```python
+from sklearn.model_selection import StratifiedKFold
+
+# Define the number of folds
+kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=123)
+
+all_results = []
+
+# Iterate through each fold
+for fold_num, (train, dev) in enumerate(kf.split(kfold_dataset, kfold_dataset['label'])):
+    # Prepare datasets for training and validation
+    train_dataset = ClassificationDataset(...)
+    val_dataset = ClassificationDataset(...)
+
+    # Define training arguments
+    training_args = TrainingArguments(...)
+
+    # Initialize and train the model
+    trainer = Trainer(...)
+    trainer.train()
+
+    # Evaluate and save the model
+    results = trainer.evaluate()
+    all_results.append(results)
+    trainer.save_model(f"./train_{fold_num}/best_model")
+```
+# Ensemble all the cross validation models
+
+This project employs an ensemble approach to sentiment analysis using multiple models trained on a labeled dataset. The models leverage the Hugging Face `transformers` library for state-of-the-art natural language processing capabilities.
+
+## Overview
+
+The purpose of this script is to predict sentiment labels (Negative, Neutral, Positive, Mixed) on a test set using the predictions from five different models trained with cross-validation. The ensemble method combines the predictions from these models to improve accuracy.
+
+## Steps
+
+1. **Load Required Libraries**: The script imports necessary libraries, including `transformers`, `pandas`, and `more_itertools`.
+
+2. **Load the Label Map**: The inverse label map is created to decode model outputs back to human-readable labels.
+
+3. **Load the Test Dataset**: The test set is extracted from the selected dataset for inference.
+
+4. **Model Inference**:
+   - A loop iterates through five models (assumed to be previously trained and saved).
+   - Each model is used to perform sentiment analysis on the test set in batches for efficiency.
+   - The predictions from each model are stored in a DataFrame.
+
+5. **Ensemble Predictions**:
+   - For each instance in the test set, scores from each model are aggregated.
+   - The average score for each sentiment class is computed, and the class with the highest average score is selected as the final prediction.
+
+6. **Results**:
+   - The script outputs the count of predictions for each sentiment class.
+   - A classification report is generated, showing precision, recall, and F1-score for each class.
+
+## Output
+
+The output of the script includes:
+- A count of final predictions across sentiment classes:
+  - **Negative**: 1603
+  - **Neutral**: 1433
+  - **Positive**: 932
+  - **Mixed**: 12
+- A classification report that provides detailed metrics for model performance.
+
+## Conclusion
+
+This ensemble method improves the robustness of sentiment predictions by leveraging the strengths of multiple models, enhancing overall accuracy and reliability.
+
    
 ## Challenges and Limitations
 
