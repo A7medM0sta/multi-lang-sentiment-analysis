@@ -21,6 +21,63 @@ The project has four main steps:
 
 ## 1. Loading and Preprocessing the Data
 
+## Custom Dataset Class
+
+The `CustomDataset` class is designed to hold and structure datasets in a convenient manner. It allows you to specify:
+
+- **Name**: Identifier for the dataset.
+- **Train**: A list of Pandas DataFrames containing training data with columns `["text", "label"]`.
+- **Test**: A list of Pandas DataFrames for testing data, also structured with `["text", "label"]`.
+- **Label List**: A list of possible labels for classification.
+
+-This class provides flexibility, allowing you to use any dataset you prefer, including your own. Note that no preprocessing of the text is done at this stage; this will be handled later when loading the text.
+## HARD Dataset
+
+The HARD dataset is loaded from a balanced reviews text file using the following code:
+
+```python
+df_HARD = pd.read_csv("/content/balanced-reviews.txt", sep="\t", header=0, encoding='utf-16')
+df_HARD = df_HARD[["review", "rating"]]  # Focus on review and rating only
+df_HARD.columns = [DATA_COLUMN, LABEL_COLUMN]
+```
+-The ratings are converted into labels, where ratings greater than 3 are coded as 'POS' (positive), and ratings less than 3 are coded as 'NEG' (negative). The dataset is then split into training and testing sets.
+```python
+hard_map = {
+    5: 'POS',
+    4: 'POS',
+    2: 'NEG',
+    1: 'NEG'
+}
+```
+-This results in a balanced dataset with the following label distribution:
+
+-NEG: 52,164 reviews
+-POS: 53,899 reviews
+-This dataset is structured and stored using the CustomDataset class.
+
+## LABR Dataset Processing
+
+The `LABR` class is designed to handle the processing of Arabic book reviews from raw TSV files. It includes methods for:
+
+- **Cleaning Reviews**: Removing URLs, HTML tags, and unwanted characters to produce a sanitized text corpus.
+- **Reading Reviews**: Loading ratings, review IDs, user IDs, book IDs, and review bodies from clean and raw review files.
+- **Data Splitting**: Creating training and testing datasets for multi-class (ratings 1-5) and binary classification (positive/negative).
+
+This class facilitates the preparation of the LABR dataset for machine learning tasks.
+
+## ArSAS Dataset Processing
+
+The ArSAS dataset contains Arabic tweets labeled with sentiment. The data is read from a tab-separated file and filtered to include only the tweet text and sentiment label. The unique sentiment labels are: Positive, Negative, Neutral, and Mixed.
+
+- **Total Tweets**: 19,897
+- **Label Distribution**:
+  - Negative: 7,384
+  - Neutral: 6,894
+  - Positive: 4,400
+  - Mixed: 1,219
+
+The dataset is split into training (15,917) and testing (3,980) sets.
+
 Data preprocessing is one of the most crucial steps in any NLP task. In this project, we start by loading a CSV file that contains text data and corresponding sentiment labels (positive, negative, or neutral). Each row of the CSV file includes a sentence and a sentiment classification.
 
 **Example Data Format:**
