@@ -120,30 +120,29 @@ print(f"F1-Score: {f1}")
 
 - **Accuracy**: 85%
 - **F1-Score**: 84%
-These results indicate that the fine-tuned BERT model performs well in predicting sentiments across multiple languages, but improvements can still be made.
+- These results indicate that the fine-tuned BERT model performs well in predicting sentiments across multiple languages, but improvements can still be made.
    
 ## Challenges and Limitations
 
-### 1. Multilingual Support: Handling multiple languages adds complexity because different languages have different grammatical structures, vocabularies, and context usage. BERT's multilingual capability helps mitigate this, but further improvements could be made by fine-tuning it on larger, more diverse multilingual datasets.
+-**1. Multilingual Support**: Handling multiple languages adds complexity because different languages have different grammatical structures, vocabularies, and context usage. BERT's multilingual capability helps mitigate this, but further improvements could be made by fine-tuning it on larger, more diverse multilingual datasets.
 
 
-### 2. Data Preprocessing: Text data often contains noisy or unstructured elements (e.g., misspellings, slang, emojis) that can impact model performance. Proper cleaning and tokenization are critical for ensuring accurate predictions.
+-**2. Data Preprocessing**: Text data often contains noisy or unstructured elements (e.g., misspellings, slang, emojis) that can impact model performance. Proper cleaning and tokenization are critical for ensuring accurate predictions.
 
 ### How to Run the Project
 
-## 1. Clone the repository: Download the code by running the following command:
+-**1. Clone the repository**: Download the code by running the following command:
 
 ```git clone https://github.com/yourusername/multi-lang-sentiment-analysis.git
 cd multi-lang-sentiment-analysis
 ```
 
-
-## 2. Install Dependencies: Make sure you have all the required packages installed by running:
+-**2. Install Dependencies**: Make sure you have all the required packages installed by running:
 ```
 pip install -r requirements.txt
 ```
 
-## 3. Run the Notebook: Open Sentiment_Analysis_BERT-uncased.ipynb in Jupyter Notebook and follow the instructions for data preprocessing, training, and evaluation.
+-**3. Run the Notebook**: Open Sentiment_Analysis_BERT-uncased.ipynb in Jupyter Notebook and follow the instructions for data preprocessing, training, and evaluation.
 
 ### Future Improvements
 
